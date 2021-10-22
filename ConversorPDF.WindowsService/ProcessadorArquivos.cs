@@ -1,7 +1,10 @@
 ﻿using ConversorPDF.Config;
 using iTextSharp.text;
+using iTextSharp.text.pdf;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +16,8 @@ namespace ConversorPDF
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                await ConverterParaPDFAsync();
+
                 await Task.Delay(1000, stoppingToken);
             }
         }
@@ -21,18 +26,24 @@ namespace ConversorPDF
         {
             var arquivos = new DirectoryInfo(Configuracao.Processamento).GetFiles("*.filter");
 
-            Document doc = new Document();
-
-            doc.Open();
-
             foreach (var a in arquivos)
             {
-                StreamReader rdr = new StreamReader(a.OpenRead());
+                Document doc = new Document();
+
+                string caminhoSaida = $"{Configuracao.Saida}{a.Name}";
+
+                StreamReader rdr = new StreamReader(a.FullName);
+
+                doc.Open();
+
+                PdfWriter.GetInstance(doc, new FileStream(caminhoSaida, FileMode.CreateNew));
 
                 doc.Add(new Paragraph(await rdr.ReadToEndAsync()));
-            }
 
-            doc.Close();
+                doc.Close();
+
+                Log.Information($"Arquivo: {a.Name} convertido para PDF com sucesso!");
+            }
         }
     }
 }

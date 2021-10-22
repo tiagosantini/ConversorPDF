@@ -21,6 +21,7 @@ namespace ConversorPDF
                 {
                     services.AddLogging(config => config.AddSerilog(Log.Logger));
                     services.AddHostedService<ObservadorEntrada>();
+                    services.AddHostedService<ProcessadorArquivos>();
                 });
     }
 }
