@@ -28,15 +28,17 @@ namespace ConversorPDF
 
             foreach (var a in arquivos)
             {
+                string arquivoSaidaPdf = a.Name.Replace(".filter", ".pdf");
+
                 Document doc = new Document();
 
-                string caminhoSaida = $"{Configuracao.Saida}{a.Name}";
+                string caminhoSaida = $"{Configuracao.Saida}{arquivoSaidaPdf}";
 
                 StreamReader rdr = new StreamReader(a.FullName);
 
-                doc.Open();
-
                 PdfWriter.GetInstance(doc, new FileStream(caminhoSaida, FileMode.CreateNew));
+
+                doc.Open();
 
                 doc.Add(new Paragraph(await rdr.ReadToEndAsync()));
 

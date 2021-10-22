@@ -37,7 +37,10 @@ namespace ConversorPDF
         {
             string nomeInicial = arquivo.Name;
 
-            arquivo.RenameWithIncrement(arquivo.FullName);
+            //arquivo.RenameWithIncrement(arquivo.FullName);
+            //arquivo.Name.Replace(".txt", ".filter");
+
+            arquivo.MoveTo(Path.ChangeExtension(arquivo.FullName, ".filter"));
 
             Log.Information($"Renomeando arquivo: '{nomeInicial}' para '{arquivo.Name}'...");
 
