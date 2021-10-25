@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ConversorPDF.Workers
 {
-    public class ProcessadorArquivos : BackgroundService
+    public class ProcessadorDeArquivosWorker : BackgroundService
     {
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {

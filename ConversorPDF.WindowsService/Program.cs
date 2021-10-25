@@ -32,7 +32,7 @@ namespace ConversorPDF
                 {
                     services.AddLogging(config => config.AddSerilog(Log.Logger));
                     services.AddHostedService<ObservadorDeEntradaWorker>();
-                    services.AddHostedService<ProcessadorArquivos>();
+                    services.AddHostedService<ProcessadorDeArquivosWorker>();
                 });
     }
 }
