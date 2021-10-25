@@ -2,12 +2,7 @@
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConversorPDF.WindowsService.Dominio
 {
