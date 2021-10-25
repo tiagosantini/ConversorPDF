@@ -1,4 +1,5 @@
 using ConversorPDF.Logging;
+using ConversorPDF.Workers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
