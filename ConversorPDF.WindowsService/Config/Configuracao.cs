@@ -19,7 +19,7 @@ namespace ConversorPDF.Config
             IConfigurationSection diretorios = config.Build().GetSection("Diretorios");
 
             Entrada = diretorios["Entrada"];
-            Processamento = diretorios["Processamento"];
+            Processamento = diretorios["Processados"];
             Saida = diretorios["Saida"];
             Falha = diretorios["Falha"];
         }

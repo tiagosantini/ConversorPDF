@@ -1,85 +1,78 @@
-﻿using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
-using ConversorPDF.Config;
+﻿using ConversorPDF.Config;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ConversorPDF.WindowsService.Dominio;
+using System.Diagnostics;
 
 namespace ConversorPDF.Workers
 {
     public class ProcessadorDeArquivosWorker : BackgroundService
     {
+        public FilaDeConversao FilaDeConversao { get; init; }
+
+        public ProcessadorDeArquivosWorker(FilaDeConversao filaDeConversao)
+        {
+            FilaDeConversao = filaDeConversao;
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            while (true)
             {
-                await ConverterParaPDFAsync();
+                Log.Debug("Buscando processos de conversão...");
 
-                await Task.Delay(1000, stoppingToken);
+                ProcessoDeConversao processoSelecionado = FilaDeConversao.ObterProcessoDaFila();
+
+                if (processoSelecionado == null)
+                {
+                    Log.Debug("Nenhum processo foi encontrado. Buscando novamente em 5 segundos.");
+
+                    await Task.Delay(5000);
+                    continue;
+                }
+
+                try
+                {
+                    Stopwatch watch = new Stopwatch();
+                    watch.Start();
+
+                    Log.Information("Iniciando o processo de conversão GUID [{Processo}] com {QtdArquivos} arquivos...", processoSelecionado.Id, processoSelecionado.ArquivosDeEntrada.Count);
+
+                    Parallel.ForEach(processoSelecionado.ArquivosDeEntrada, (arquivoDeEntrada) =>
+                    {
+                        ArquivoDeSaida arquivoDeSaida = new ArquivoDeSaida(Configuracao.Saida, arquivoDeEntrada.Nome, arquivoDeEntrada.Conteudo);
+
+                        string nomeDoArquivo;
+
+                        bool pdfCriado = arquivoDeSaida.GerarArquivoPdf(out nomeDoArquivo);
+
+                        if (pdfCriado)
+                        {
+                            Log.Information("{NomeArquivo} gerado com sucesso!", Path.GetFileName(nomeDoArquivo));
+
+                            if (arquivoDeEntrada.MoverPara(Configuracao.Processamento) == false)
+                                Log.Warning("{Arquivo} não foi movido para {Diretorio}...", arquivoDeEntrada.Nome, Configuracao.Saida);
+                        }
+                        else if (arquivoDeEntrada.MoverPara(Configuracao.Falha) == false)
+                            Log.Warning("{Arquivo} não foi movido para {Diretorio}...", arquivoDeEntrada.Nome, Configuracao.Saida);
+
+                        else
+                            Log.Error("Falha ao processar o arquivo '{Arquivo}'", arquivoDeEntrada.Nome);
+                    });
+
+                    watch.Stop();
+
+                    Log.Information("O processo de conversão GUID [{Processo}] foi finalizado em {Tempo} segundos.",
+                        processoSelecionado.Id, watch.ElapsedMilliseconds / 1000.0);
+                }
+                catch (System.Exception ex)
+                {
+                    Log.Error(ex, "{ProcessoSelecionado}", processoSelecionado);
+                }
             }
         }
-
-        private async Task ConverterParaPDFAsync()
-        {
-            var arquivos = new DirectoryInfo(Configuracao.Processamento).GetFiles("*.filter");
-
-            foreach (var a in arquivos)
-            {
-                string arquivoSaidaPdf = a.Name.Replace(".filter", ".pdf");
-
-                string caminhoSaida = $"{Configuracao.Saida}{arquivoSaidaPdf}";
-
-                using var fileStream = new FileStream(caminhoSaida, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-
-                using PdfWriter writer = new PdfWriter(fileStream);
-
-                using PdfDocument pdf = new PdfDocument(writer);
-
-                using Document document = new Document(pdf);
-
-                Paragraph texto = new Paragraph("Teste")
-                   .SetTextAlignment(TextAlignment.LEFT);
-
-                document.Add(texto);
-
-                a.Delete();
-
-                Log.Information($"Arquivo: {a.Name} convertido para PDF com sucesso!");
-            }
-        }
-
-        //public bool GerarArquivoPdf(out string nomeArquivo)
-        //{
-        //    nomeArquivo = Path.GetFileNameWithoutExtension(arquivo);
-
-        //    try
-        //    {
-        //        var nome = string.Format(@"{0}{1}.pdf", diretorio, nomeArquivo);
-
-        //        using var fileStream = new FileStream(nome, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-
-        //        using PdfWriter writer = new PdfWriter(fileStream);
-
-        //        using PdfDocument pdf = new PdfDocument(writer);
-
-        //        using Document document = new Document(pdf);
-
-        //        Paragraph texto = new Paragraph(conteudo)
-        //           .SetTextAlignment(TextAlignment.LEFT);
-
-        //        document.Add(texto);
-        //    }
-        //    catch (System.Exception)
-        //    {
-        //        return false;
-        //    }
-
-        //    return true;
-        //}
     }
 }
