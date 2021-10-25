@@ -1,6 +1,8 @@
-﻿using ConversorPDF.Config;
-using iTextSharp.text;
-using iTextSharp.text.pdf;
+﻿using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using ConversorPDF.Config;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System.IO;
@@ -30,22 +32,54 @@ namespace ConversorPDF
             {
                 string arquivoSaidaPdf = a.Name.Replace(".filter", ".pdf");
 
-                Document doc = new Document();
-
                 string caminhoSaida = $"{Configuracao.Saida}{arquivoSaidaPdf}";
 
-                StreamReader rdr = new StreamReader(a.FullName);
+                using var fileStream = new FileStream(caminhoSaida, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
 
-                PdfWriter.GetInstance(doc, new FileStream(caminhoSaida, FileMode.CreateNew));
+                using PdfWriter writer = new PdfWriter(fileStream);
 
-                doc.Open();
+                using PdfDocument pdf = new PdfDocument(writer);
 
-                doc.Add(new Paragraph(await rdr.ReadToEndAsync()));
+                using Document document = new Document(pdf);
 
-                doc.Close();
+                Paragraph texto = new Paragraph("Teste")
+                   .SetTextAlignment(TextAlignment.LEFT);
+
+                document.Add(texto);
+
+                a.Delete();
 
                 Log.Information($"Arquivo: {a.Name} convertido para PDF com sucesso!");
             }
         }
+
+        //public bool GerarArquivoPdf(out string nomeArquivo)
+        //{
+        //    nomeArquivo = Path.GetFileNameWithoutExtension(arquivo);
+
+        //    try
+        //    {
+        //        var nome = string.Format(@"{0}{1}.pdf", diretorio, nomeArquivo);
+
+        //        using var fileStream = new FileStream(nome, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+
+        //        using PdfWriter writer = new PdfWriter(fileStream);
+
+        //        using PdfDocument pdf = new PdfDocument(writer);
+
+        //        using Document document = new Document(pdf);
+
+        //        Paragraph texto = new Paragraph(conteudo)
+        //           .SetTextAlignment(TextAlignment.LEFT);
+
+        //        document.Add(texto);
+        //    }
+        //    catch (System.Exception)
+        //    {
+        //        return false;
+        //    }
+
+        //    return true;
+        //}
     }
 }

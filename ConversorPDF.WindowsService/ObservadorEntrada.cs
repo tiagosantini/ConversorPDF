@@ -15,7 +15,7 @@ namespace ConversorPDF
             Log.Information($"Observando o diretório {Configuracao.Entrada}");
 
             while (!stoppingToken.IsCancellationRequested)
-            {
+            {   
                 FileInfo[] arquivosRenomeados = await Task.Run( () => ObservarDiretorioEntrada(), stoppingToken);
 
                 EnviarParaProcessamento(arquivosRenomeados);
