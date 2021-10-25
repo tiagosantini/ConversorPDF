@@ -15,9 +15,11 @@ namespace ConversorPDF.Workers
     public class ObservadorDeEntradaWorker : BackgroundService
     {
         public FilaDeConversao FilaDeConversao { get; init; }
+        public Configuracao Configuracao { get; init; }
 
-        public ObservadorDeEntradaWorker(FilaDeConversao filaDeConversao)
+        public ObservadorDeEntradaWorker(Configuracao config, FilaDeConversao filaDeConversao)
         {
+            Configuracao = config;
             FilaDeConversao = filaDeConversao;
         }
 

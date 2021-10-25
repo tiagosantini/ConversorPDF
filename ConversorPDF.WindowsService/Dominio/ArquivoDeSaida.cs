@@ -18,10 +18,10 @@ namespace ConversorPDF.WindowsService.Dominio
         private readonly string conteudo;
 
 
-        public ArquivoDeSaida(string arquivo, string diretorio, string conteudo)
+        public ArquivoDeSaida(string diretorio, string arquivo, string conteudo)
         {
-            this.arquivo = arquivo;
             this.diretorio = diretorio;
+            this.arquivo = arquivo;
             this.conteudo = conteudo;
         }
 

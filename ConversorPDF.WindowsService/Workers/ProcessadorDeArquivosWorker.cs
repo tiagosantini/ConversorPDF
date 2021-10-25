@@ -12,9 +12,11 @@ namespace ConversorPDF.Workers
     public class ProcessadorDeArquivosWorker : BackgroundService
     {
         public FilaDeConversao FilaDeConversao { get; init; }
+        public Configuracao Configuracao { get; init; }
 
-        public ProcessadorDeArquivosWorker(FilaDeConversao filaDeConversao)
+        public ProcessadorDeArquivosWorker(Configuracao config, FilaDeConversao filaDeConversao)
         {
+            Configuracao = config;
             FilaDeConversao = filaDeConversao;
         }
 
@@ -53,7 +55,7 @@ namespace ConversorPDF.Workers
                         {
                             Log.Information("{NomeArquivo} gerado com sucesso!", Path.GetFileName(nomeDoArquivo));
 
-                            if (arquivoDeEntrada.MoverPara(Configuracao.Processamento) == false)
+                            if (arquivoDeEntrada.MoverPara(Configuracao.Processados) == false)
                                 Log.Warning("{Arquivo} não foi movido para {Diretorio}...", arquivoDeEntrada.Nome, Configuracao.Saida);
                         }
                         else if (arquivoDeEntrada.MoverPara(Configuracao.Falha) == false)

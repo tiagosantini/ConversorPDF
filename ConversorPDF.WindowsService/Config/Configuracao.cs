@@ -1,27 +1,28 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.IO;
+﻿using System.IO;
 
 namespace ConversorPDF.Config
 {
-    public static class Configuracao
+    public class Configuracao
     {
-        public static string Entrada { get; set; }
-        public static string Processamento { get; set; }
-        public static string Saida { get; set; }
-        public static string Falha { get; set; }
+        public string DiretorioRaiz { get; init; }
+        public string Entrada => VerificaSeExisteEhCriaDiretorio("Arquivos TXT");
+        public string Processados => VerificaSeExisteEhCriaDiretorio("Arquivos Processados");
+        public string Saida => VerificaSeExisteEhCriaDiretorio("Arquivos PDF");
+        public string Falha => VerificaSeExisteEhCriaDiretorio("Arquivos com Falha");
 
-        static Configuracao()
+        public Configuracao(string diretorioRaiz)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false);
+            DiretorioRaiz = diretorioRaiz;
+        }
 
-            IConfigurationSection diretorios = config.Build().GetSection("Diretorios");
+        private string VerificaSeExisteEhCriaDiretorio(string diretorio)
+        {
+            var caminho = Path.Combine(DiretorioRaiz, diretorio);
 
-            Entrada = diretorios["Entrada"];
-            Processamento = diretorios["Processados"];
-            Saida = diretorios["Saida"];
-            Falha = diretorios["Falha"];
+            if (Directory.Exists(caminho) == false)
+                Directory.CreateDirectory(caminho);
+
+            return caminho;
         }
     }
 }
